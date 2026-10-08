@@ -1,0 +1,9 @@
+.venv/
+.pio/
+**/.pio/
+__pycache__/
+*.pyc
+data/*.db
+data/*.log
+models/*.task
+!.gitkeep

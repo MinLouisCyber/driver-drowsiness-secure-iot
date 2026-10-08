@@ -1,0 +1,24 @@
+{
+  "folders": [
+    {
+      "name": "Driver Monitor Python",
+      "path": "."
+    },
+    {
+      "name": "ESP32 Wokwi",
+      "path": "wokwi"
+    }
+  ],
+  "settings": {
+    "files.associations": {
+      "*.ino": "cpp"
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "platformio.platformio-ide",
+      "ms-vscode.cpptools",
+      "ms-python.python"
+    ]
+  }
+}
