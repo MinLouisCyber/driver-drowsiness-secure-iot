@@ -98,12 +98,15 @@ class DrowsinessEngine:
         elif missing_for >= cfg.missing_face_seconds:
             level = AlertLevel.DROWSY
             reasons.append(f"face missing {missing_for:.1f}s")
-        elif perclos >= cfg.perclos_alarm and self._window_ready():
-            level = AlertLevel.DROWSY
-            reasons.append(f"PERCLOS {perclos:.0%}")
         elif closed_for >= cfg.warning_closed_seconds:
             level = AlertLevel.WARNING
             reasons.append(f"eyes closing {closed_for:.1f}s")
+        elif perclos >= cfg.perclos_alarm and self._window_ready():
+            # PERCLOS describes recent fatigue, not whether the eyes are still
+            # closed now. Keep the visual warning but release the buzzer as
+            # soon as the driver opens their eyes.
+            level = AlertLevel.WARNING
+            reasons.append(f"high PERCLOS {perclos:.0%}")
         elif perclos >= cfg.perclos_warning and self._window_ready():
             level = AlertLevel.WARNING
             reasons.append(f"PERCLOS {perclos:.0%}")

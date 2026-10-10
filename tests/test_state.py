@@ -29,6 +29,36 @@ class DrowsinessEngineTests(unittest.TestCase):
         )
         self.assertEqual(AlertLevel.DROWSY, state.level)
 
+    def test_opening_eyes_releases_alarm_with_high_perclos(self):
+        engine = DrowsinessEngine()
+        for second in range(11):
+            engine.update(
+                float(second),
+                face_detected=True,
+                ear=0.30,
+                mar=0.2,
+                ear_threshold=0.20,
+            )
+        for second in range(11, 18):
+            state = engine.update(
+                float(second),
+                face_detected=True,
+                ear=0.10,
+                mar=0.2,
+                ear_threshold=0.20,
+            )
+        self.assertEqual(AlertLevel.DROWSY, state.level)
+
+        recovered = engine.update(
+            18.0,
+            face_detected=True,
+            ear=0.30,
+            mar=0.2,
+            ear_threshold=0.20,
+        )
+        self.assertGreaterEqual(recovered.perclos, 0.35)
+        self.assertEqual(AlertLevel.WARNING, recovered.level)
+
 
 if __name__ == "__main__":
     unittest.main()

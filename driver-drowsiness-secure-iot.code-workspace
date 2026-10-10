@@ -12,6 +12,12 @@
   "settings": {
     "files.associations": {
       "*.ino": "cpp"
+    },
+    "files.exclude": {
+      ".venv": true,
+      "wokwi": true,
+      "**/.pio": true,
+      "**/__pycache__": true
     }
   },
   "extensions": {
