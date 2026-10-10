@@ -1,7 +1,7 @@
 /*
  * ESP32 alert-node simulation for Wokwi.
  *
- * MQTT/Serial commands: NORMAL, WARNING, DROWSY, TAMPER
+ * MQTT commands: NORMAL, WARNING, DROWSY, TAMPER
  */
 
 #include <Arduino.h>
@@ -22,7 +22,6 @@ const char *COMMAND_TOPIC = "driver/LAPTOP-CAM-01/command";
 const char *ACK_TOPIC = "driver/LAPTOP-CAM-01/ack";
 
 SystemState currentState = NORMAL;
-String serialBuffer;
 unsigned long lastBlink = 0;
 unsigned long lastStatusLog = 0;
 bool blinkPhase = false;
@@ -60,7 +59,7 @@ void setState(SystemState nextState) {
   Serial.println(stateName(currentState));
 }
 
-void handleCommand(String command) {
+bool handleCommand(String command) {
   command.trim();
   command.toUpperCase();
   bool accepted = true;
@@ -77,6 +76,7 @@ void handleCommand(String command) {
     Serial.print("ACK STATE=");
     Serial.println(stateName(currentState));
   }
+  return accepted && command.length();
 }
 
 void onMqttMessage(char *topic, byte *payload, unsigned int length) {
@@ -89,7 +89,7 @@ void onMqttMessage(char *topic, byte *payload, unsigned int length) {
   }
   String requestId = message.substring(0, separator);
   String command = message.substring(separator + 1);
-  handleCommand(command);
+  if (!handleCommand(command)) return;
   String ack = requestId + "|ACK STATE=" + stateName(currentState);
   mqttClient.publish(ACK_TOPIC, ack.c_str());
   Serial.print("MQTT ACK -> ");
@@ -113,20 +113,6 @@ void connectMqtt() {
   } else {
     Serial.print("MQTT connect failed, rc=");
     Serial.println(mqttClient.state());
-  }
-}
-
-void readSerialCommands() {
-  while (Serial.available()) {
-    char value = Serial.read();
-    if (value == '\n' || value == '\r') {
-      if (serialBuffer.length()) {
-        handleCommand(serialBuffer);
-        serialBuffer = "";
-      }
-    } else {
-      serialBuffer += value;
-    }
   }
 }
 
@@ -180,7 +166,7 @@ void setup() {
   delay(350);
   ledcWriteTone(BUZZER_CHANNEL, 0);
   Serial.println("ESP32 DRIVER ALERT NODE READY");
-  Serial.println("Commands: NORMAL, WARNING, DROWSY, TAMPER");
+  Serial.println("MQTT commands: NORMAL, WARNING, DROWSY, TAMPER");
   WiFi.mode(WIFI_STA);
   WiFi.begin("Wokwi-GUEST", "", 6);
   Serial.print("Connecting to Wokwi-GUEST");
@@ -199,7 +185,6 @@ void setup() {
 }
 
 void loop() {
-  readSerialCommands();
   connectMqtt();
   mqttClient.loop();
   updateOutputs();

@@ -1,6 +1,7 @@
 .venv/
 .pio/
 **/.pio/
+**/.vscode/
 __pycache__/
 *.pyc
 data/*.db

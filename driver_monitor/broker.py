@@ -11,8 +11,7 @@ async def _serve(host: str, port: int) -> None:
         "plugins": {
             "amqtt.plugins.authentication.AnonymousAuthPlugin": {
                 "allow_anonymous": True
-            },
-            "amqtt.plugins.sys.broker.BrokerSysPlugin": {"sys_interval": 0},
+            }
         },
     }
     broker = Broker(config)

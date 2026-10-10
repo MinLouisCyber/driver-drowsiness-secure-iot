@@ -5,7 +5,7 @@ import time
 from pathlib import Path
 
 from .events import EventPipeline
-from .state import AlertLevel, DrowsinessEngine
+from .state import DrowsinessEngine
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DB = ROOT / "data" / "events.db"
@@ -40,12 +40,6 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="do not open the OpenCV window (useful while Wokwi must stay visible)",
     )
-    camera.add_argument(
-        "--local-alarm",
-        action="store_true",
-        help="also sound the laptop speaker (disabled by default)",
-    )
-
     mqtt_test = commands.add_parser(
         "mqtt-test", help="test Wokwi LEDs and buzzer over MQTT"
     )
@@ -66,7 +60,6 @@ def build_parser() -> argparse.ArgumentParser:
 def run_simulation(database: str) -> None:
     pipeline = EventPipeline(database)
     engine = DrowsinessEngine()
-    start = time.monotonic()
     scenarios = [
         ("normal", 2.0, 0.30, 0.25),
         ("eyes closing", 0.9, 0.12, 0.25),
@@ -135,7 +128,6 @@ def main() -> None:
             mqtt_host=args.mqtt_host,
             mqtt_port=args.mqtt_port,
             show_preview=not args.no_preview,
-            local_alarm=args.local_alarm,
         )
     elif args.command == "mqtt-test":
         run_mqtt_test(args.mqtt_host, args.mqtt_port)

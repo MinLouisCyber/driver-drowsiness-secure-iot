@@ -60,9 +60,12 @@ trình duyệt đang sử dụng webcam trước khi chạy.
 
 Trong 4 giây đầu, giữ mắt mở và nhìn vào camera để hiệu chỉnh EAR. Sau đó:
 
+- Viền mắt xanh khi mở, đỏ khi nhắm; viền miệng chuyển cam khi há/ngáp.
+
 - Nhắm mắt ngắn: không báo động.
 - Nhắm mắt khoảng 0,7 giây: cảnh báo.
 - Nhắm mắt từ khoảng 1,5 giây: báo động.
+- Khi mở mắt lại: còi dừng ngay; PERCLOS cao chỉ tiếp tục nháy cảnh báo vàng.
 - Không thấy khuôn mặt trên 2 giây: báo động.
 - Nhấn `q` để thoát.
 
@@ -78,8 +81,7 @@ Khởi động lại Wokwi Simulator để nạp firmware mới, rồi chạy:
 .\run-integrated-wokwi.ps1
 ```
 
-Script tự khởi động broker MQTT nền ở cổng `1883` và giữ broker hoạt động kể cả
-khi đóng camera. Python gửi trạng thái đến topic
+Script tự khởi động broker MQTT nền ở cổng `1883`. Python gửi trạng thái đến topic
 `driver/LAPTOP-CAM-01/command`; ESP32 gửi ACK về topic
 `driver/LAPTOP-CAM-01/ack`. Khi terminal in `ESP32 MQTT -> ... ACK STATE=DROWSY`,
 LED đỏ và buzzer Wokwi đã nhận cùng trạng thái. Loa laptop không được sử dụng.
