@@ -7,21 +7,21 @@
     {
       "type": "wokwi-led",
       "id": "green",
-      "top": -128.4,
-      "left": 387.8,
+      "top": -138,
+      "left": 435.8,
       "attrs": { "color": "green", "label": "NORMAL" }
     },
     {
       "type": "wokwi-led",
       "id": "yellow",
-      "top": -128.4,
-      "left": 455,
-      "attrs": { "color": "yellow", "label": "WARNING" }
+      "top": -138,
+      "left": 368.6,
+      "attrs": { "color": "yellow", "label": "WARNING", "flip": "" }
     },
     {
       "type": "wokwi-led",
       "id": "red",
-      "top": -128.4,
+      "top": -138,
       "left": 512.6,
       "attrs": { "color": "red", "label": "DROWSY/TAMPER" }
     },
@@ -29,24 +29,24 @@
       "type": "wokwi-resistor",
       "id": "rGreen",
       "top": 22.6,
-      "left": 383.15,
+      "left": 431.15,
       "rotate": 270,
       "attrs": { "value": "220" }
     },
     {
       "type": "wokwi-resistor",
       "id": "rYellow",
-      "top": 24,
-      "left": 450.65,
-      "rotate": 90,
+      "top": 13,
+      "left": 363.95,
+      "rotate": 270,
       "attrs": { "value": "220" }
     },
     {
       "type": "wokwi-resistor",
       "id": "rRed",
-      "top": 24,
-      "left": 508.25,
-      "rotate": 90,
+      "top": 22.6,
+      "left": 507.95,
+      "rotate": 270,
       "attrs": { "value": "220" }
     },
     {
@@ -62,13 +62,13 @@
     [ "esp:RX", "$serialMonitor:TX", "", [] ],
     [ "esp:4", "rGreen:1", "green", [] ],
     [ "rGreen:2", "green:A", "green", [] ],
-    [ "green:C", "esp:GND.1", "black", [ "v355.2", "h-431.6", "v-115.2" ] ],
-    [ "esp:5", "rYellow:1", "yellow", [] ],
-    [ "rYellow:2", "yellow:A", "yellow", [] ],
-    [ "yellow:C", "esp:GND.1", "black", [ "v355.2", "h-498.8", "v-115.2" ] ],
+    [ "green:C", "esp:GND.1", "black", [ "v38.4", "h-28.4", "v-86.4", "h-432", "v297.6" ] ],
+    [ "esp:5", "rYellow:1", "yellow", [ "h398.44" ] ],
+    [ "rYellow:2", "yellow:A", "yellow", [ "v-78", "h-19.2" ] ],
+    [ "yellow:C", "esp:GND.1", "black", [ "v38.4", "h-28.4", "v-86.4", "h-364.8", "v297.6" ] ],
     [ "esp:2", "rRed:1", "red", [] ],
     [ "rRed:2", "red:A", "red", [] ],
-    [ "red:C", "esp:GND.1", "black", [ "v355.2", "h-556.4", "v-115.2" ] ],
+    [ "red:C", "esp:GND.1", "black", [ "v38.4", "h-28.4", "v-86.4", "h-508.8", "v297.6" ] ],
     [ "esp:18", "buzzer:2", "orange", [ "h216.04", "v-76.8" ] ],
     [ "buzzer:1", "esp:GND.2", "black", [] ]
   ],

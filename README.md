@@ -99,6 +99,8 @@ Mở một PowerShell khác:
 ```
 
 Truy cập `http://127.0.0.1:5000`. Dữ liệu nằm tại `data/events.db`.
+SQLite vẫn lưu Unix timestamp để xác thực; dashboard và API bổ sung trường
+`timestamp_display` theo định dạng giờ Việt Nam `dd/mm/yyyy HH:MM:SS`.
 
 ## Phát hiện giả mạo
 

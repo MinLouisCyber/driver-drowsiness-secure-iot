@@ -1,8 +1,27 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from .storage import EventStore
+
+VIETNAM_TIMEZONE = timezone(timedelta(hours=7))
+
+
+def format_timestamp(value: int | float | str) -> str:
+    """Convert a Unix timestamp to a readable Vietnam date and time."""
+    try:
+        moment = datetime.fromtimestamp(float(value), tz=VIETNAM_TIMEZONE)
+    except (TypeError, ValueError, OSError):
+        return "Không xác định"
+    return moment.strftime("%d/%m/%Y %H:%M:%S")
+
+
+def present_events(events: list[dict]) -> list[dict]:
+    return [
+        {**event, "timestamp_display": format_timestamp(event.get("timestamp", 0))}
+        for event in events
+    ]
 
 
 def create_app(database: str | Path):
@@ -23,7 +42,7 @@ def create_app(database: str | Path):
     </style></head><body><main><h1>Hệ thống giám sát trạng thái tài xế</h1>
     <p>Tự động làm mới sau 5 giây. Bản ghi không hợp lệ là dữ liệu bị sửa, phát lại hoặc không đúng thiết bị.</p>
     <table><thead><tr><th>Thời gian</th><th>Thiết bị</th><th>Trạng thái</th><th>Kiểm tra</th><th>Lý do</th></tr></thead>
-    <tbody>{% for e in events %}<tr><td>{{e.timestamp}}</td><td>{{e.device_id}}</td><td>{{e.status}}</td>
+    <tbody>{% for e in events %}<tr><td>{{e.timestamp_display}}</td><td>{{e.device_id}}</td><td>{{e.status}}</td>
     <td class="{{'ok' if e.accepted else 'bad'}}">{{'Hợp lệ' if e.accepted else 'Giả mạo'}}</td>
     <td>{{e.verification_reason}}</td></tr>{% endfor %}</tbody></table></main>
     <script>setTimeout(()=>location.reload(),5000)</script></body></html>
@@ -31,11 +50,10 @@ def create_app(database: str | Path):
 
     @app.get("/")
     def index():
-        return render_template_string(template, events=store.latest(100))
+        return render_template_string(template, events=present_events(store.latest(100)))
 
     @app.get("/api/events")
     def events():
-        return jsonify(store.latest(100))
+        return jsonify(present_events(store.latest(100)))
 
     return app
-
