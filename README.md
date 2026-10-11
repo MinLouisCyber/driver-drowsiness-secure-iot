@@ -104,6 +104,19 @@ Truy cập `http://127.0.0.1:5000`. Dữ liệu nằm tại `data/events.db`.
 SQLite vẫn lưu Unix timestamp để xác thực; dashboard và API bổ sung trường
 `timestamp_display` theo định dạng giờ Việt Nam `dd/mm/yyyy HH:MM:SS`.
 
+## Dashboard camera trực tiếp
+
+Để chạy camera ẩn, thuật toán, MQTT và dashboard trong cùng một tiến trình:
+
+```powershell
+.\run-monitor.ps1
+```
+
+Sau đó mở `http://127.0.0.1:5000`. Dashboard hiển thị luồng camera đã vẽ
+landmark, EAR, MAR, PERCLOS, thời gian nhắm mắt, số lần ngáp và lịch sử xác
+thực dữ liệu. Camera chỉ được mở một lần nên không chạy đồng thời
+`run-camera.ps1` hoặc ứng dụng Windows Camera.
+
 ## Phát hiện giả mạo
 
 Mỗi sự kiện có dạng:

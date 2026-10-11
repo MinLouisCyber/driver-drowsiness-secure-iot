@@ -1,6 +1,9 @@
 import unittest
+import tempfile
+from pathlib import Path
 
-from driver_monitor.web import format_timestamp, present_events
+from driver_monitor.runtime import MonitorRuntime
+from driver_monitor.web import create_app, format_timestamp, present_events
 
 
 class WebTimestampTests(unittest.TestCase):
@@ -14,6 +17,23 @@ class WebTimestampTests(unittest.TestCase):
 
     def test_invalid_timestamp_has_safe_label(self):
         self.assertEqual("Không xác định", format_timestamp("invalid"))
+
+    def test_live_status_endpoint_uses_camera_runtime(self):
+        runtime = MonitorRuntime()
+        runtime.update_status(camera="ACTIVE", level="NORMAL", ear=0.291)
+        with tempfile.TemporaryDirectory() as directory:
+            app = create_app(Path(directory) / "events.db", runtime)
+            response = app.test_client().get("/api/status")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("ACTIVE", response.json["camera"])
+        self.assertEqual("NORMAL", response.json["level"])
+        self.assertEqual(0.291, response.json["ear"])
+
+    def test_dashboard_without_runtime_reports_offline(self):
+        with tempfile.TemporaryDirectory() as directory:
+            app = create_app(Path(directory) / "events.db")
+            response = app.test_client().get("/api/status")
+        self.assertEqual("OFFLINE", response.json["camera"])
 
 
 if __name__ == "__main__":
