@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="live-layout">
+  <article class="card video-card"><div class="video-head"><div><h2>Driver-facing camera</h2><p>MediaPipe landmarks and adaptive EAR tracking</p></div><span id="live-state" class="state-pill">Offline</span></div><div class="video-frame">{% if live_camera %}<img src="/video-feed" alt="Live driver camera">{% else %}<div class="video-empty"><b>Camera is offline</b><span>Run <code>run-monitor.ps1</code> to start live monitoring.</span></div>{% endif %}<div id="video-alert" class="video-alert">Waiting for camera</div></div></article>
+  <aside class="live-metrics">
+    <article class="card sensor-card"><span>Eye Aspect Ratio</span><strong id="live-ear">--</strong><div class="sensor-row"><small>Left <b id="left-ear">--</b></small><small>Right <b id="right-ear">--</b></small></div></article>
+    <article class="card sensor-card"><span>Mouth Aspect Ratio</span><strong id="live-mar">--</strong><div class="sensor-row"><small>Yawn state</small><b id="mouth-state">Closed</b></div></article>
+    <article class="card sensor-card"><span>PERCLOS</span><strong id="live-perclos">0%</strong><div class="progress"><i id="perclos-progress"></i></div></article>
+    <article class="card sensor-card"><span>Continuous closure</span><strong id="live-closed">0.0s</strong><div class="progress warm"><i id="closure-progress"></i></div></article>
+  </aside>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='live.js') }}"></script>{% endblock %}

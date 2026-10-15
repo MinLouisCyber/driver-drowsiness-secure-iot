@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ page_title }} · LucidDrive</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body data-page="{{ active_page }}">
+  <aside class="sidebar">
+    <a class="brand" href="/"><span class="brand-mark">L</span><span>LucidDrive</span></a>
+    <nav>
+      <a class="nav-link {{ 'active' if active_page == 'overview' else '' }}" href="/"><span>⌂</span>Overview</a>
+      <a class="nav-link {{ 'active' if active_page == 'live' else '' }}" href="/live"><span>◉</span>Live Monitor</a>
+      <a class="nav-link {{ 'active' if active_page == 'events' else '' }}" href="/events"><span>≡</span>Events</a>
+      <a class="nav-link {{ 'active' if active_page == 'security' else '' }}" href="/security"><span>◇</span>Security</a>
+    </nav>
+    <div class="sidebar-foot"><div class="device-name">LAPTOP-CAM-01</div><div class="device-caption">Edge monitoring node</div></div>
+  </aside>
+  <main class="app-shell">
+    <header class="topbar">
+      <div><h1>{{ page_title }}</h1><p>{{ page_subtitle }}</p></div>
+      <div class="connections"><span id="camera-chip" class="chip"><i></i>Camera</span><span id="mqtt-chip" class="chip"><i></i>MQTT</span><span id="esp-chip" class="chip"><i></i>ESP32</span></div>
+    </header>
+    <section class="page-content">{% block content %}{% endblock %}</section>
+  </main>
+  <script src="{{ url_for('static', filename='common.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

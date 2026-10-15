@@ -1,5 +1,7 @@
 import types
 import unittest
+import threading
+import time
 from unittest.mock import patch
 
 import paho.mqtt.client as mqtt
@@ -50,6 +52,21 @@ class MqttAlertTests(unittest.TestCase):
             sender = MqttAlert("127.0.0.1")
             self.assertTrue(sender.send("DROWSY"))
             sender.close()
+
+    def test_async_publish_does_not_block_camera_caller(self):
+        sender = MqttAlert(None)
+        finished = threading.Event()
+
+        def slow_send(state):
+            time.sleep(0.2)
+            finished.set()
+            return True
+
+        sender.send = slow_send
+        started = time.monotonic()
+        sender.send_async("DROWSY")
+        self.assertLess(time.monotonic() - started, 0.1)
+        self.assertTrue(finished.wait(1.0))
 
 
 if __name__ == "__main__":

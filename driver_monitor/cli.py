@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import threading
 import time
 from pathlib import Path
 
@@ -54,6 +55,20 @@ def build_parser() -> argparse.ArgumentParser:
     server.add_argument("--database", default=str(DEFAULT_DB))
     server.add_argument("--host", default="127.0.0.1")
     server.add_argument("--port", type=int, default=5000)
+
+    monitor = commands.add_parser(
+        "monitor", help="run the camera in background with the live dashboard"
+    )
+    monitor.add_argument("--index", type=int, default=0)
+    monitor.add_argument(
+        "--camera-backend", choices=("msmf", "dshow", "auto"), default="msmf"
+    )
+    monitor.add_argument("--model", default=str(DEFAULT_MODEL))
+    monitor.add_argument("--database", default=str(DEFAULT_DB))
+    monitor.add_argument("--mqtt-host", default="127.0.0.1")
+    monitor.add_argument("--mqtt-port", type=int, default=1883)
+    monitor.add_argument("--host", default="127.0.0.1")
+    monitor.add_argument("--port", type=int, default=5000)
     return parser
 
 
@@ -139,3 +154,37 @@ def main() -> None:
         from .web import create_app
 
         create_app(args.database).run(host=args.host, port=args.port, debug=False)
+    elif args.command == "monitor":
+        from .runtime import MonitorRuntime
+        from .vision import run_camera
+        from .web import create_app
+
+        runtime = MonitorRuntime()
+        pipeline = EventPipeline(args.database)
+
+        def camera_worker() -> None:
+            try:
+                run_camera(
+                    args.index,
+                    args.model,
+                    pipeline,
+                    camera_backend=args.camera_backend,
+                    mqtt_host=args.mqtt_host,
+                    mqtt_port=args.mqtt_port,
+                    show_preview=False,
+                    frame_callback=runtime.publish_frame,
+                    telemetry_callback=lambda values: runtime.update_status(**values),
+                )
+            except Exception as error:
+                runtime.update_status(
+                    camera="ERROR",
+                    level="OFFLINE",
+                    message=f"Không mở được camera: {error}",
+                )
+                print(f"Camera worker stopped: {error}")
+
+        threading.Thread(target=camera_worker, daemon=True).start()
+        print(f"Dashboard ready at http://{args.host}:{args.port}")
+        create_app(args.database, runtime).run(
+            host=args.host, port=args.port, debug=False, threaded=True
+        )

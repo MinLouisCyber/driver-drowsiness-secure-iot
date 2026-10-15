@@ -104,6 +104,24 @@ Truy cập `http://127.0.0.1:5000`. Dữ liệu nằm tại `data/events.db`.
 SQLite vẫn lưu Unix timestamp để xác thực; dashboard và API bổ sung trường
 `timestamp_display` theo định dạng giờ Việt Nam `dd/mm/yyyy HH:MM:SS`.
 
+## Dashboard camera trực tiếp
+
+Để chạy camera ẩn, thuật toán, MQTT và dashboard trong cùng một tiến trình:
+
+```powershell
+.\run-monitor.ps1
+```
+
+Sau đó mở `http://127.0.0.1:5000`. Dashboard được chia thành các trang độc lập:
+
+- `/`: tổng quan và biểu đồ PERCLOS theo thời gian.
+- `/live`: camera, landmark và chỉ số EAR/MAR trực tiếp.
+- `/events`: lịch sử cảnh báo.
+- `/security`: dữ liệu bị sửa, phát lại hoặc gửi từ thiết bị lạ.
+
+Camera chỉ được mở một lần nên không chạy đồng thời `run-camera.ps1` hoặc ứng
+dụng Windows Camera.
+
 ## Phát hiện giả mạo
 
 Mỗi sự kiện có dạng:

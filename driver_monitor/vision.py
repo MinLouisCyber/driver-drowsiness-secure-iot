@@ -4,6 +4,7 @@ import math
 import time
 import urllib.request
 from pathlib import Path
+from typing import Any, Callable
 
 from .events import EventPipeline
 from .mqtt_alert import MqttAlert
@@ -79,6 +80,20 @@ def draw_face_features(
     eye_color = (0, 0, 255) if eyes_closed else (0, 220, 0)
     mouth_color = (0, 140, 255) if mouth_open else (255, 220, 0)
 
+    face_points = [_point(landmarks, index, width, height) for index in range(len(landmarks))]
+    x_values = [point[0] for point in face_points]
+    y_values = [point[1] for point in face_points]
+    margin = 12
+    top_left = (
+        max(0, int(min(x_values)) - margin),
+        max(0, int(min(y_values)) - margin),
+    )
+    bottom_right = (
+        min(width - 1, int(max(x_values)) + margin),
+        min(height - 1, int(max(y_values)) + margin),
+    )
+    cv2.rectangle(frame, top_left, bottom_right, eye_color, 2, cv2.LINE_AA)
+
     def contour(indices, color) -> None:
         points = np.array(
             [_point(landmarks, index, width, height) for index in indices],
@@ -108,6 +123,8 @@ def run_camera(
     mqtt_host: str | None = None,
     mqtt_port: int = 1883,
     show_preview: bool = True,
+    frame_callback: Callable[[bytes], None] | None = None,
+    telemetry_callback: Callable[[dict[str, Any]], None] | None = None,
 ) -> None:
     import cv2
     import mediapipe as mp
@@ -137,6 +154,7 @@ def run_camera(
         f"resolution={int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))}x"
         f"{int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))}"
     )
+    capture.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
     engine = DrowsinessEngine()
     mqtt_alert = MqttAlert(mqtt_host, mqtt_port)
@@ -145,6 +163,7 @@ def run_camera(
     ear_threshold: float | None = None
     last_status: AlertLevel | None = None
     last_event_at = 0.0
+    last_dashboard_frame_at = 0.0
 
     quit_hint = "Press q to quit." if show_preview else "Press Ctrl+C to quit."
     print(f"Keep eyes open during calibration. {quit_hint}")
@@ -163,16 +182,16 @@ def run_camera(
                 now = time.monotonic()
                 face_detected = bool(result.face_landmarks)
                 ear_value = mar_value = None
+                left_ear_value = right_ear_value = None
                 if face_detected:
                     landmarks = result.face_landmarks[0]
-                    ear_value = float(
-                        np.mean(
-                            [
-                                eye_aspect_ratio(landmarks, RIGHT_EYE, width, height),
-                                eye_aspect_ratio(landmarks, LEFT_EYE, width, height),
-                            ]
-                        )
+                    right_ear_value = eye_aspect_ratio(
+                        landmarks, RIGHT_EYE, width, height
                     )
+                    left_ear_value = eye_aspect_ratio(
+                        landmarks, LEFT_EYE, width, height
+                    )
+                    ear_value = float(np.mean([right_ear_value, left_ear_value]))
                     mar_value = mouth_aspect_ratio(landmarks, width, height)
                     draw_face_features(
                         frame,
@@ -222,15 +241,44 @@ def run_camera(
                             f"event #{event['sequence']}: {event['status']} "
                             f"({verified.reason})"
                         )
-                        mqtt_alert.send(
+                        mqtt_alert.send_async(
                             event["status"] if verified.accepted else "TAMPER"
                         )
                         last_status = state.level
                         last_event_at = now
 
+                if telemetry_callback is not None:
+                    telemetry_callback(
+                        {
+                            "camera": "ACTIVE",
+                            "mqtt": "CONNECTED" if mqtt_alert.connected else "DISCONNECTED",
+                            "esp32": "ONLINE" if mqtt_alert.device_online else "WAITING",
+                            "level": "CALIBRATING" if state is None else state.level.value,
+                            "message": message,
+                            "face_detected": face_detected,
+                            "ear": ear_value,
+                            "ear_threshold": ear_threshold,
+                            "left_ear": left_ear_value,
+                            "right_ear": right_ear_value,
+                            "mar": mar_value,
+                            "mouth_open": mar_value is not None and mar_value > 0.60,
+                            "perclos": 0.0 if state is None else state.perclos,
+                            "eye_closed_for": 0.0 if state is None else state.eye_closed_for,
+                            "yawns": 0 if state is None else state.yawns,
+                            "reasons": [] if state is None else list(state.reasons),
+                        }
+                    )
+
                 color = (0, 0, 255) if state and state.level is AlertLevel.DROWSY else (0, 200, 0)
                 cv2.rectangle(frame, (0, 0), (width, 45), (0, 0, 0), -1)
                 cv2.putText(frame, message, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.62, color, 2)
+                if frame_callback is not None and now - last_dashboard_frame_at >= 1 / 12:
+                    encoded, jpeg = cv2.imencode(
+                        ".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 72]
+                    )
+                    if encoded:
+                        frame_callback(jpeg.tobytes())
+                        last_dashboard_frame_at = now
                 if show_preview:
                     cv2.imshow("Secure Driver Drowsiness Monitor", frame)
                     if cv2.waitKey(1) & 0xFF == ord("q"):

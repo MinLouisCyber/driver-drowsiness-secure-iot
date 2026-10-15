@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="metric-grid">
+  <article class="metric-card accent-purple"><span>Driver state</span><strong id="driver-state">Offline</strong><small id="state-note">Waiting for camera</small></article>
+  <article class="metric-card accent-green"><span>PERCLOS</span><strong id="perclos">0%</strong><small>30-second eye closure ratio</small></article>
+  <article class="metric-card accent-blue"><span>Average EAR</span><strong id="ear">--</strong><small>Adaptive eye threshold</small></article>
+  <article class="metric-card accent-orange"><span>Yawns</span><strong id="yawns">0</strong><small>Current monitoring session</small></article>
+</section>
+<section class="overview-layout">
+  <article class="card chart-card">
+    <div class="card-head"><div><h2>Eye closure over time</h2><p>Each point represents a verified fatigue sample</p></div><div class="chart-legend"><span><i class="normal"></i>Lucid</span><span><i class="warning"></i>Drowsy</span><span><i class="danger"></i>Asleep</span></div></div>
+    <canvas id="fatigue-chart"></canvas>
+  </article>
+  <article class="card risk-card">
+    <h2>Fatigue risk</h2><div id="risk-ring" class="risk-ring"><div><strong id="risk-score">0</strong><span>/100</span></div></div><h3 id="risk-label">No live data</h3><p id="risk-reason">Start the live monitor to evaluate driver fatigue.</p>
+    <div class="risk-facts"><div><span>Eyes closed</span><b id="closed-time">0.0s</b></div><div><span>Face detected</span><b id="face-detected">No</b></div><div><span>Last update</span><b id="last-update">--</b></div></div>
+  </article>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='overview.js') }}"></script>{% endblock %}

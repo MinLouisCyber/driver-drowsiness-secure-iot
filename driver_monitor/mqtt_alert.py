@@ -22,8 +22,20 @@ class MqttAlert:
         self._connected = threading.Event()
         self._ack_received = threading.Event()
         self._expected_ack = ""
+        self._last_ack_at = 0.0
         self._next_retry_at = 0.0
         self._reported_unavailable = False
+        self._async_lock = threading.Lock()
+        self._pending_state: str | None = None
+        self._async_worker: threading.Thread | None = None
+
+    @property
+    def connected(self) -> bool:
+        return self._connected.is_set()
+
+    @property
+    def device_online(self) -> bool:
+        return self.connected and time.monotonic() - self._last_ack_at <= 10.0
 
     def _on_connect(self, client, userdata, flags, reason_code, properties) -> None:
         if reason_code == 0:
@@ -40,6 +52,7 @@ class MqttAlert:
         text = message.payload.decode("utf-8", errors="replace").strip()
         print(f"ESP32 MQTT -> {text}")
         if text == self._expected_ack:
+            self._last_ack_at = time.monotonic()
             self._ack_received.set()
 
     def _connect(self) -> bool:
@@ -97,6 +110,29 @@ class MqttAlert:
             print(f"MQTT publish failed: {error}")
             self.close()
             return False
+
+    def send_async(self, state: str) -> None:
+        """Queue the latest alert without blocking the camera processing loop."""
+        with self._async_lock:
+            self._pending_state = state
+            if self._async_worker is not None and self._async_worker.is_alive():
+                return
+            self._async_worker = threading.Thread(
+                target=self._drain_pending_states,
+                name="mqtt-alert",
+                daemon=True,
+            )
+            self._async_worker.start()
+
+    def _drain_pending_states(self) -> None:
+        while True:
+            with self._async_lock:
+                state = self._pending_state
+                self._pending_state = None
+                if state is None:
+                    self._async_worker = None
+                    return
+            self.send(state)
 
     def close(self) -> None:
         client = self._client
