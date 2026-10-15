@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="security-grid"><article class="card integrity-card"><div class="shield">◇</div><div><span>Current integrity status</span><h2 id="integrity-state">Protected</h2><p id="integrity-note">No recent tampering attempts detected.</p></div></article><article class="card security-stat"><span>Signing algorithm</span><strong>HMAC-SHA256</strong><small>Payload integrity</small></article><article class="card security-stat"><span>Replay protection</span><strong>Sequence + Time</strong><small>Ordering and freshness</small></article></section>
+<article class="card table-card"><div class="card-head"><div><h2>Security events</h2><p>Rejected or suspicious biometric telemetry</p></div></div><div class="table-scroll"><table><thead><tr><th>Time</th><th>Device</th><th>Claimed state</th><th>Result</th><th>Detection reason</th></tr></thead><tbody id="security-body"><tr><td colspan="5" class="empty-row">No security events detected</td></tr></tbody></table></div></article>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='security.js') }}"></script>{% endblock %}

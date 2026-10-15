@@ -182,16 +182,16 @@ def run_camera(
                 now = time.monotonic()
                 face_detected = bool(result.face_landmarks)
                 ear_value = mar_value = None
+                left_ear_value = right_ear_value = None
                 if face_detected:
                     landmarks = result.face_landmarks[0]
-                    ear_value = float(
-                        np.mean(
-                            [
-                                eye_aspect_ratio(landmarks, RIGHT_EYE, width, height),
-                                eye_aspect_ratio(landmarks, LEFT_EYE, width, height),
-                            ]
-                        )
+                    right_ear_value = eye_aspect_ratio(
+                        landmarks, RIGHT_EYE, width, height
                     )
+                    left_ear_value = eye_aspect_ratio(
+                        landmarks, LEFT_EYE, width, height
+                    )
+                    ear_value = float(np.mean([right_ear_value, left_ear_value]))
                     mar_value = mouth_aspect_ratio(landmarks, width, height)
                     draw_face_features(
                         frame,
@@ -257,7 +257,11 @@ def run_camera(
                             "message": message,
                             "face_detected": face_detected,
                             "ear": ear_value,
+                            "ear_threshold": ear_threshold,
+                            "left_ear": left_ear_value,
+                            "right_ear": right_ear_value,
                             "mar": mar_value,
+                            "mouth_open": mar_value is not None and mar_value > 0.60,
                             "perclos": 0.0 if state is None else state.perclos,
                             "eye_closed_for": 0.0 if state is None else state.eye_closed_for,
                             "yawns": 0 if state is None else state.yawns,

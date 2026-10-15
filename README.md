@@ -112,10 +112,15 @@ SQLite vẫn lưu Unix timestamp để xác thực; dashboard và API bổ sung 
 .\run-monitor.ps1
 ```
 
-Sau đó mở `http://127.0.0.1:5000`. Dashboard hiển thị luồng camera đã vẽ
-landmark, EAR, MAR, PERCLOS, thời gian nhắm mắt, số lần ngáp và lịch sử xác
-thực dữ liệu. Camera chỉ được mở một lần nên không chạy đồng thời
-`run-camera.ps1` hoặc ứng dụng Windows Camera.
+Sau đó mở `http://127.0.0.1:5000`. Dashboard được chia thành các trang độc lập:
+
+- `/`: tổng quan và biểu đồ PERCLOS theo thời gian.
+- `/live`: camera, landmark và chỉ số EAR/MAR trực tiếp.
+- `/events`: lịch sử cảnh báo.
+- `/security`: dữ liệu bị sửa, phát lại hoặc gửi từ thiết bị lạ.
+
+Camera chỉ được mở một lần nên không chạy đồng thời `run-camera.ps1` hoặc ứng
+dụng Windows Camera.
 
 ## Phát hiện giả mạo
 
